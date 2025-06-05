@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sistem Management Gereja Batu Hijau</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.emailjs.com/sdk/3.2.0/email.min.js"></script>
+  <script>
+    (function() {
+      emailjs.init("GANTI_DENGAN_USER_ID_ANDA"); // Ganti dengan User ID dari EmailJS dashboard
+    })();
+  </script>
+</head>
+</head>
+<body>
+  <!-- Login Form -->
+  <div id="loginContainer">
+    <h2>⛪ Login Sistem Management Gereja</h2>
+    <input type="text" id="username" placeholder="Username" /><br />
+    <input type="password" id="password" placeholder="Password" /><br /><br />
+    <button onclick="login()">Login</button>
+  </div>
+
+  <!-- Main App Container -->
+  <div class="container" id="mainApp" style="display: none;">
+    <h1>⛪ Sistem Manajemen Gereja Batu Hijau</h1>
+
+    <nav>
+      <button onclick="switchTab('anggota')" id="btn-anggota" class="active">Jemaat Gereja</button>
+      <button onclick="switchTab('ibadah')" id="btn-ibadah">Kegiatan Ibadah</button>
+      <button onclick="switchTab('kegiatan')" id="btn-kegiatan">Kegiatan Sosial</button>
+      <button onclick="switchTab('keuangan')" id="btn-keuangan">Keuangan</button>
+      <div style="text-align:right; margin-bottom:10px;">
+        <button onclick="logout()" style="background:#e74c3c;">Logout</button>
+      </div>
+    </nav>
+
+    <!-- Anggota -->
+    <section id="anggota" class="tab">
+      <h2>📋 Jemaat Gereja</h2>
+      <input placeholder="Nama" id="namaAnggota" />
+      <input type="date" id="tahunBaptis" type="number" min="1900" max="2100" />
+      <button onclick="tambahAnggota()">Tambah</button>
+      <button onclick="exportAnggota()">Export ke Excel</button>
+      <ul id="daftarAnggota"></ul>
+    </section>
+
+    <!-- Kegiatan Ibadah -->
+    <section id="ibadah" class="tab" style="display:none">
+  <h2>🙏 Kegiatan Ibadah</h2>
+  <input placeholder="Nama MC" id="namaMC" />
+  <input placeholder="Nama Doa Syafaat" id="namaDoa" />
+  <input placeholder="Nama Khotbah" id="namaKhotbah" />
+  <input type="date" id="tanggalIbadah" />
+  <input placeholder="Email untuk Notifikasi" id="emailIbadah" />
+  <button onclick="tambahIbadah()">Tambah Yang Ambil Bagian</button>
+  <button onclick="exportIbadah()">Export ke Excel</button>
+  <ul id="daftarIbadah"></ul>
+</section>
+
+
+    <!-- Rencana Kegiatan -->
+    <section id="kegiatan" class="tab" style="display:none">
+      <h2>📅 Rencana Kegiatan</h2>
+      <input placeholder="Judul" id="judulKegiatan" />
+      <input type="date" id="tanggalKegiatan" />
+      <button onclick="tambahKegiatan()">Tambah Kegiatan</button>
+      <button onclick="exportKegiatan()">Export ke Excel</button>
+      <ul id="daftarKegiatan"></ul>
+    </section>
+
+    <!-- Keuangan -->
+    <section id="keuangan" class="tab" style="display:none">
+      <h2>💰 Keuangan</h2>
+      <input placeholder="Keterangan" id="ketTransaksi" />
+      <input placeholder="Jumlah" type="number" id="jumlahTransaksi" />
+      <input type="date" id="tanggalKeuangan" />
+      <select id="jenisTransaksi">
+        <option value="pemasukan">Pemasukan</option>
+        <option value="pengeluaran">Pengeluaran</option>
+      </select>
+      <button onclick="tambahTransaksi()">Tambah Transaksi</button>
+      <button onclick="exportTransaksi()">Export ke Excel</button>
+      <h3>Saldo: <span id="saldo">Rp0</span></h3>
+      <ul id="daftarTransaksi"></ul>
+    </section>
+  </div>
+
+  <!-- Script -->
+  <script>
+    const users = [
+      { username: 'admin', password: 'admin123' },
+      { username: 'ayub', password: 'ayub' }
+    ];
+
+    function login() {
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value.trim();
+
+      const validUser = users.find(user => user.username === u && user.password === p);
+      if (validUser) {
+        localStorage.setItem('loggedInUser', u);
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        render();
+        switchTab('anggota');
+      } else {
+        alert('Username atau password salah!');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('loggedInUser');
+      location.reload();
+    }
+
+    if (localStorage.getItem('loggedInUser')) {
+      window.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('loginContainer').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        render();
+        switchTab('anggota');
+      });
+    }
+
+    let anggota = JSON.parse(localStorage.getItem('anggota')) || [];
+    let ibadah = JSON.parse(localStorage.getItem('ibadah')) || [];
+    let kegiatan = JSON.parse(localStorage.getItem('kegiatan')) || [];
+    let transaksi = JSON.parse(localStorage.getItem('transaksi')) || [];
+
+    function simpan() {
+      localStorage.setItem('anggota', JSON.stringify(anggota));
+      localStorage.setItem('ibadah', JSON.stringify(ibadah));
+      localStorage.setItem('kegiatan', JSON.stringify(kegiatan));
+      localStorage.setItem('transaksi', JSON.stringify(transaksi));
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
+      document.getElementById(tab).style.display = 'block';
+      render();
+
+      document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('btn-' + tab).classList.add('active');
+    }
+
+    // TAMBAH DATA
+    function tambahAnggota() {
+      const nama = document.getElementById('namaAnggota').value.trim();
+      const tahun = document.getElementById('tahunBaptis').value.trim();
+      if (!nama || !tahun) {
+        alert('Isi nama dan tahun baptis.');
+        return;
+      }
+  
+      anggota.push({ nama, tahun });
+      simpan();
+      renderAnggota();
+      document.getElementById('namaAnggota').value = '';
+      document.getElementById('tahunBaptis').value = '';
+    }
+
+   function tambahIbadah() {
+  const namaMC = document.getElementById('namaMC').value.trim();
+  const namaDoa = document.getElementById('namaDoa').value.trim();
+  const namaKhotbah = document.getElementById('namaKhotbah').value.trim();
+  const tanggal = document.getElementById('tanggalIbadah').value;
+  const email = document.getElementById('emailIbadah').value.trim();
+
+  if (!namaMC || !namaDoa || !namaKhotbah || !tanggal || !email) {
+    alert('Lengkapi semua data kegiatan ibadah dan email.');
+    return;
+  }
+
+  ibadah.push({ namaMC, namaDoa, namaKhotbah, tanggal, email });
+  simpan();
+  renderIbadah();
+
+  document.getElementById('namaMC').value = '';
+  document.getElementById('namaDoa').value = '';
+  document.getElementById('namaKhotbah').value = '';
+  document.getElementById('tanggalIbadah').value = '';
+  document.getElementById('emailIbadah').value = '';
+}
+
+function renderIbadah() {
+  const ul = document.getElementById('daftarIbadah');
+  ul.innerHTML = '';
+  ibadah.forEach((item, i) => {
+    const pesan = `Halo,\nIni jadwal ibadah pada tanggal ${item.tanggal}.\nMC: ${item.namaMC}\nDoa Syafaat: ${item.namaDoa}\nKhotbah: ${item.namaKhotbah}`;
+    ul.innerHTML += `<li>
+      ${item.tanggal} - MC: ${item.namaMC}, Doa: ${item.namaDoa}, Khotbah: ${item.namaKhotbah} 
+      <button class="delete-btn" onclick="hapusIbadah(${i})">Hapus</button>
+      <button onclick="kirimNotifikasiEmail('${item.email}', \`${pesan}\`)">Kirim Notif Email</button>
+    </li>`;
+  });
+}
+
+function kirimNotifikasiEmail(email, pesan) {
+  emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
+    to_email: email,
+    message: pesan,
+  })
+  .then(() => alert('Email notifikasi terkirim!'))
+  .catch(() => alert('Gagal kirim email'));
+}
+
+
+   function tambahKegiatan() {
+  const judul = document.getElementById('judulKegiatan').value.trim();
+  const tanggal = document.getElementById('tanggalKegiatan').value;
+
+  if (!judul || !tanggal) {
+    alert('Isi semua data kegiatan.');
+    return;
+  }
+
+  kegiatan.push({ judul, tanggal });
+  simpan();
+  renderKegiatan();
+  document.getElementById('judulKegiatan').value = '';
+  document.getElementById('tanggalKegiatan').value = '';
+}
+
+
+    function tambahTransaksi() {
+      const ket = document.getElementById('ketTransaksi').value.trim();
+      const jumlah = parseFloat(document.getElementById('jumlahTransaksi').value);
+      const jenis = document.getElementById('jenisTransaksi').value;
+      if (!ket || isNaN(jumlah) || jumlah <= 0) {
+        alert('Data transaksi tidak valid!');
+        return;
+      }
+      transaksi.push({ ket, jumlah, jenis });
+      simpan();
+      renderTransaksi();
+      document.getElementById('ketTransaksi').value = '';
+      document.getElementById('jumlahTransaksi').value = '';
+    }
+
+    // RENDER LIST & TAMBAH TOMBOL HAPUS
+    function renderAnggota() {
+      const ul = document.getElementById('daftarAnggota');
+      ul.innerHTML = '';
+      const tahunSekarang = new Date().getFullYear();
+      const baru = anggota.filter(a => parseInt(a.tahun) === tahunSekarang);
+      const lama = anggota.filter(a => parseInt(a.tahun) < tahunSekarang);
+
+      if (baru.length) {
+        ul.innerHTML += '<h3>Jemaat Gereja</h3>';
+        baru.forEach((a, i) => {
+          ul.innerHTML += `<li>${a.nama} - Tahun ${a.tahun} <button class="delete-btn" onclick="hapusAnggota(${i})">Hapus</button></li>`;
+        });
+      }
+
+      if (lama.length) {
+        ul.innerHTML += '<h3>Anggota Lama</h3>';
+        lama.forEach((a, i) => {
+          // i index ini diubah ke index global anggota
+          const globalIndex = anggota.indexOf(a);
+          ul.innerHTML += `<li>${a.nama} - Tahun ${a.tahun} <button class="delete-btn" onclick="hapusAnggota(${globalIndex})">Hapus</button></li>`;
+        });
+      }
+    }
+
+    function renderIbadah() {
+      const ul = document.getElementById('daftarIbadah');
+      ul.innerHTML = '';
+      ibadah.forEach((item, i) => {
+        ul.innerHTML += `<li>${item.tanggal} - MC: ${item.namaMC}, Doa: ${item.namaDoa}, Khotbah: ${item.namaKhotbah} <button class="delete-btn" onclick="hapusIbadah(${i})">Hapus</button></li>`;
+      });
+    }
+
+    function renderKegiatan() {
+      const ul = document.getElementById('daftarKegiatan');
+      ul.innerHTML = '';
+      kegiatan.forEach((item, i) => {
+        ul.innerHTML += `<li>${item.tanggal} - ${item.judul} <button class="delete-btn" onclick="hapusKegiatan(${i})">Hapus</button></li>`;
+      });
+    }
+
+    function renderTransaksi() {
+      const ul = document.getElementById('daftarTransaksi');
+      ul.innerHTML = '';
+      let saldo = 0;
+      transaksi.forEach((item, i) => {
+        saldo += item.jenis === 'pemasukan' ? item.jumlah : -item.jumlah;
+        ul.innerHTML += `<li>${item.ket} - ${item.jenis} Rp${item.jumlah.toLocaleString()} <button class="delete-btn" onclick="hapusTransaksi(${i})">Hapus</button></li>`;
+      });
+      document.getElementById('saldo').innerText = `Rp${saldo.toLocaleString()}`;
+    }
+
+    // HAPUS DATA
+    function hapusAnggota(index) {
+      if (confirm('Yakin hapus anggota ini?')) {
+        anggota.splice(index, 1);
+        simpan();
+        renderAnggota();
+      }
+    }
+
+    function hapusIbadah(index) {
+      if (confirm('Yakin hapus data ibadah ini?')) {
+        ibadah.splice(index, 1);
+        simpan();
+        renderIbadah();
+      }
+    }
+
+    function hapusKegiatan(index) {
+      if (confirm('Yakin hapus data kegiatan ini?')) {
+        kegiatan.splice(index, 1);
+        simpan();
+        renderKegiatan();
+      }
+    }
+
+    function hapusTransaksi(index) {
+      if (confirm('Yakin hapus transaksi ini?')) {
+        transaksi.splice(index, 1);
+        simpan();
+        renderTransaksi();
+      }
+    }
+
+    // EXPORT ke Excel (CSV sederhana)
+    function exportAnggota() {
+      let csv = 'Nama,Tahun Baptis\n';
+      anggota.forEach(a => csv += `${a.nama},\n`);
+      downloadCSV(csv, 'jemaat_gereja.csv');
+    }
+
+    function exportIbadah() {
+      let csv = 'Tanggal,MC,Doa Syafaat,Khotbah,\n';
+      ibadah.forEach(i => csv += `${i.tanggal},${i.namaMC},${i.namaDoa},${i.namaKhotbah}\n`);
+      downloadCSV(csv, 'kegiatan_ibadah.csv');
+    }
+
+    function exportKegiatan() {
+      let csv = 'Tanggal,Judul\n';
+      kegiatan.forEach(k => csv += `${k.tanggal},${k.judul},\n`);
+      downloadCSV(csv, 'rencana_kegiatan.csv');
+    }
+
+    function exportTransaksi() {
+      let csv = 'Keterangan,Jenis,Jumlah\n';
+      transaksi.forEach(t => csv += `${t.ket},${t.jenis},${t.jumlah}\n`);
+      downloadCSV(csv, 'keuangan.csv');
+    }
+
+    function downloadCSV(csv, filename) {
+      const blob = new Blob([csv], {type: 'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function render() {
+      renderAnggota();
+      renderIbadah();
+      renderKegiatan();
+      renderTransaksi();
+    }
+   function setMaxDateToday() {
+  const today = new Date().toISOString().split('T')[0];
+  const inputKeuangan = document.querySelector('#tanggalKeuangan');
+  if (inputKeuangan) {
+    inputKeuangan.max = today;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', setMaxDateToday);
+
+  </script>
+</body>
+</html>
