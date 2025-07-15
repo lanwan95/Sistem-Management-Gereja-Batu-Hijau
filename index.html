@@ -7,10 +7,9 @@
   <script src="https://cdn.emailjs.com/sdk/3.2.0/email.min.js"></script>
   <script>
     (function() {
-      emailjs.init("GANTI_DENGAN_USER_ID_ANDA"); // Ganti dengan User ID dari EmailJS dashboard
+     emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', { ... });  // Ganti dengan User ID dari EmailJS dashboard
     })();
   </script>
-</head>
 </head>
 <body>
   <!-- Login Form -->
@@ -197,13 +196,12 @@ function renderIbadah() {
 }
 
 function kirimNotifikasiEmail(email, pesan) {
-  emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
-    to_email: email,
-    message: pesan,
-  })
-  .then(() => alert('Email notifikasi terkirim!'))
-  .catch(() => alert('Gagal kirim email'));
-}
+emailjs.init("YOUR_EMAILJS_USER_ID");
+emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+  to_email: email,
+  message: pesan,
+});
+
 
 
    function tambahKegiatan() {
