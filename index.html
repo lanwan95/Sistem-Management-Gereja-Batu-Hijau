@@ -255,9 +255,12 @@
         renderTransaksi();
       }
     }
+window.onload = function() {
+  emailjs.init('service_sujcqd5');
+};
 
-    function kirimNotifikasiEmail(email, pesan) {
-  emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
+function kirimNotifikasiEmail(email, pesan) {
+  emailjs.send('service_sujcqd5', 'template_abcd1234', {
     to_email: email,
     message: pesan,
   })
@@ -270,6 +273,7 @@
     alert('Gagal kirim email');
   });
 }
+
 
 
     // Render daftar anggota
