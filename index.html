@@ -7,10 +7,12 @@
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.emailjs.com/sdk/3.2.0/email.min.js"></script>
   <script>
-    (function () {
-      emailjs.init("GANTI_DENGAN_USER_ID_ANDA"); // Ganti dengan User ID dari EmailJS dashboard
-    })();
-  </script>
+    // Fungsi mengirim notifikasi email via EmailJS
+    function kirimNotifikasiEmail(email, pesan) {
+      emailjs.send('service_xyz', 'template_abc', { // Ganti dengan service dan template Anda
+        to_email: email,
+        message: pesan,
+      })
 </head>
 <body>
   <!-- Login Form -->
