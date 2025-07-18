@@ -7,12 +7,12 @@
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.emailjs.com/sdk/3.2.0/email.min.js"></script>
   <script>
-    // Fungsi mengirim notifikasi email via EmailJS
-    function kirimNotifikasiEmail(email, pesan) {
-      emailjs.send('service_xyz', 'template_abc', { // Ganti dengan service dan template Anda
-        to_email: email,
-        message: pesan,
-      })
+    // Inisialisasi EmailJS (sesuaikan dengan user ID Anda)
+    (function(){
+      emailjs.init('YOUR_USER_ID'); // Ganti dengan User ID dari EmailJS dashboard
+    })();
+  </script>
+</head>
 <body>
   <!-- Login Form -->
   <div id="loginContainer">
@@ -88,11 +88,13 @@
 
   <!-- Script -->
   <script>
+    // User data
     const users = [
       { username: 'admin', password: 'admin123' },
       { username: 'ayub', password: 'ayub123' }
     ];
 
+    // Data dari localStorage atau default array kosong
     let anggota = JSON.parse(localStorage.getItem('anggota')) || [];
     let ibadah = JSON.parse(localStorage.getItem('ibadah')) || [];
     let kegiatan = JSON.parse(localStorage.getItem('kegiatan')) || [];
@@ -136,6 +138,7 @@
       render();
     }
 
+    // Auto login jika sudah login
     if (localStorage.getItem('loggedInUser')) {
       window.addEventListener('DOMContentLoaded', () => {
         document.getElementById('loginContainer').style.display = 'none';
@@ -145,6 +148,7 @@
       });
     }
 
+    // Fungsi tambah anggota
     function tambahAnggota() {
       const nama = document.getElementById('namaAnggota').value.trim();
       const tahun = document.getElementById('tahunBaptis').value.trim();
@@ -159,6 +163,7 @@
       document.getElementById('tahunBaptis').value = '';
     }
 
+    // Fungsi tambah ibadah
     function tambahIbadah() {
       const namaMC = document.getElementById('namaMC').value.trim();
       const namaDoa = document.getElementById('namaDoa').value.trim();
@@ -182,6 +187,7 @@
       document.getElementById('emailIbadah').value = '';
     }
 
+    // Fungsi tambah kegiatan sosial
     function tambahKegiatan() {
       const judul = document.getElementById('judulKegiatan').value.trim();
       const tanggal = document.getElementById('tanggalKegiatan').value;
@@ -196,6 +202,7 @@
       document.getElementById('tanggalKegiatan').value = '';
     }
 
+    // Fungsi tambah transaksi keuangan
     function tambahTransaksi() {
       const ket = document.getElementById('ketTransaksi').value.trim();
       const jumlah = parseFloat(document.getElementById('jumlahTransaksi').value);
@@ -211,6 +218,7 @@
       document.getElementById('jumlahTransaksi').value = '';
     }
 
+    // Fungsi hapus data anggota
     function hapusAnggota(index) {
       if (confirm('Yakin hapus anggota ini?')) {
         anggota.splice(index, 1);
@@ -219,6 +227,7 @@
       }
     }
 
+    // Fungsi hapus data ibadah
     function hapusIbadah(index) {
       if (confirm('Yakin hapus data ibadah ini?')) {
         ibadah.splice(index, 1);
@@ -227,6 +236,7 @@
       }
     }
 
+    // Fungsi hapus data kegiatan sosial
     function hapusKegiatan(index) {
       if (confirm('Yakin hapus data kegiatan ini?')) {
         kegiatan.splice(index, 1);
@@ -235,6 +245,7 @@
       }
     }
 
+    // Fungsi hapus transaksi keuangan
     function hapusTransaksi(index) {
       if (confirm('Yakin hapus transaksi ini?')) {
         transaksi.splice(index, 1);
@@ -243,6 +254,7 @@
       }
     }
 
+    // Fungsi kirim email notifikasi menggunakan EmailJS
     function kirimNotifikasiEmail(email, pesan) {
       emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
         to_email: email,
@@ -252,6 +264,7 @@
       .catch(() => alert('Gagal kirim email'));
     }
 
+    // Render daftar anggota
     function renderAnggota() {
       const ul = document.getElementById('daftarAnggota');
       ul.innerHTML = '';
@@ -262,7 +275,9 @@
       if (baru.length) {
         ul.innerHTML += '<h3>Jemaat Baru</h3>';
         baru.forEach((a, i) => {
-          ul.innerHTML += `<li>${a.nama} - Tahun ${a.tahun} <button class="delete-btn" onclick="hapusAnggota(${i})">Hapus</button></li>`;
+          // Karena filter membuat array baru, index i tidak sesuai indeks asli anggota
+          const globalIndex = anggota.indexOf(a);
+          ul.innerHTML += `<li>${a.nama} - Tahun ${a.tahun} <button class="delete-btn" onclick="hapusAnggota(${globalIndex})">Hapus</button></li>`;
         });
       }
 
@@ -275,6 +290,7 @@
       }
     }
 
+    // Render daftar ibadah
     function renderIbadah() {
       const ul = document.getElementById('daftarIbadah');
       ul.innerHTML = '';
@@ -288,6 +304,7 @@
       });
     }
 
+    // Render daftar kegiatan sosial
     function renderKegiatan() {
       const ul = document.getElementById('daftarKegiatan');
       ul.innerHTML = '';
@@ -296,6 +313,7 @@
       });
     }
 
+    // Render daftar transaksi keuangan dan saldo
     function renderTransaksi() {
       const ul = document.getElementById('daftarTransaksi');
       ul.innerHTML = '';
@@ -307,6 +325,7 @@
       document.getElementById('saldo').innerText = `Rp${saldo.toLocaleString()}`;
     }
 
+    // Render keseluruhan
     function render() {
       renderAnggota();
       renderIbadah();
@@ -314,6 +333,7 @@
       renderTransaksi();
     }
 
+    // Set max date ke tanggal hari ini untuk input tanggal keuangan
     function setMaxDateToday() {
       const today = new Date().toISOString().split('T')[0];
       const inputKeuangan = document.querySelector('#tanggalKeuangan');
@@ -322,12 +342,16 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', setMaxDateToday);
+    document.addEventListener('DOMContentLoaded', () => {
+      setMaxDateToday();
 
-    document.addEventListener('contextmenu', function (e) {
-      e.preventDefault();
+      // Cegah klik kanan jika diinginkan (optional)
+      document.addEventListener('contextmenu', function (e) {
+        e.preventDefault();
+      });
     });
 
+    // Fungsi export ke CSV
     function downloadCSV(csv, filename) {
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
@@ -362,6 +386,5 @@
       downloadCSV(csv, 'keuangan.csv');
     }
   </script>
-</head>
 </body>
 </html>
