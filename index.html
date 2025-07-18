@@ -6,11 +6,12 @@
   <title>Sistem Management Gereja Batu Hijau</title>
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.emailjs.com/sdk/3.2.0/email.min.js"></script>
-  <script src="https://cdn.emailjs.com/sdk/3.2.0/email.min.js"></script>
 <script>
-  window.onload = function() {
-    emailjs.init('YOUR_USER_ID');
-  };
+ emailjs.send('service_sujcqd5', 'YOUR_TEMPLATE_ID', {
+  to_email: email,
+  message: pesan,
+})
+
 </script>
 
 </head>
@@ -255,15 +256,21 @@
       }
     }
 
-    // Fungsi kirim email notifikasi menggunakan EmailJS
     function kirimNotifikasiEmail(email, pesan) {
-      emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
-        to_email: email,
-        message: pesan,
-      })
-      .then(() => alert('Email notifikasi terkirim!'))
-      .catch(() => alert('Gagal kirim email'));
-    }
+  emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', {
+    to_email: email,
+    message: pesan,
+  })
+  .then((response) => {
+    console.log('Email berhasil dikirim:', response.status, response.text);
+    alert('Email notifikasi terkirim!');
+  })
+  .catch((error) => {
+    console.error('Gagal kirim email:', error);
+    alert('Gagal kirim email');
+  });
+}
+
 
     // Render daftar anggota
     function renderAnggota() {
