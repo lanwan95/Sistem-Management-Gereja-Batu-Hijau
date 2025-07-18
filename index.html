@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.emailjs.com/sdk/3.2.0/email.min.js"></script>
 <script>
- emailjs.send('service_sujcqd5', 'YOUR_TEMPLATE_ID', {
+ emailjs.send('service_sujcqd5', {
   to_email: email,
   message: pesan,
 })
@@ -255,10 +255,7 @@
         renderTransaksi();
       }
     }
-window.onload = function() {
-  emailjs.init('service_sujcqd5');
-};
-
+    
 function kirimNotifikasiEmail(email, pesan) {
   emailjs.send('service_sujcqd5', 'template_abcd1234', {
     to_email: email,
