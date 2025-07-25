@@ -254,7 +254,7 @@
     }
     
 function kirimNotifikasiEmail(email, pesan) {
-  emailjs.send('BB65kuXbeTHKHJQWM', 'template_abcd1234', {
+  emailjs.send('BB65kuXbeTHKHJQWM', {
     to_email: email,
     message: pesan,
   })
